@@ -42,7 +42,7 @@ function getUserName(channel, userId) {
     return channel._client.users[userId].name;
 }
 
-function processFitbitData(channel) {
+function processFitbitData(channel, user) {
     if (channel.name === 'fitbit') {
         if (fitbitUserList[user.id] !== undefined) {
             // extract number of steps from message
@@ -74,7 +74,7 @@ slack.on('message', function(message) {
     if (!user) {
         return;
     }
-    processFitbitData(channel);
+    processFitbitData(channel, user);
 
     var msg = message.text,
         IMG_MSG_REGEX = new RegExp('^' + BOT_NAME + '( image| img| animate)( me)? (.*)'),
