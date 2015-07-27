@@ -23,15 +23,7 @@ var Slack = require('slack-client'),
     maxUserId;
     
 slack.on('open', function() {
-    cronJob.start();
-    // get the channel named fitbit
-    // replace this hardcoded value with the channel called fitbit
-    var channel = slack.getChannelGroupOrDMByID('C086PHK0B');
-    fitbitUserList = {};
-    for (var userId in channel._client.users) {
-        fitbitUserList[userId] = 0;
-        maxUserId = userId;
-    }
+    cronJob.start(); 
 });
 
 slack.on('error', function(error) {
@@ -43,6 +35,11 @@ function getUserName(channel, userId) {
 }
 
 function processFitbitData(channel, user, message) {
+    fitbitUserList = {};
+    for (var userId in channel._client.users) {
+        fitbitUserList[userId] = 0;
+        maxUserId = userId;
+    }
     if (channel.name === 'fitbit') {
         if (fitbitUserList[user.id] !== undefined) {
             // extract number of steps from message
