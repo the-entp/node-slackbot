@@ -6,6 +6,7 @@ var Slack = require('slack-client'),
     imageSearch = require('./lib/image-search'),
     youtubeSearch = require('./lib/youtube-search'),
     greeting = require('./lib/greeting'),
+    _ = require('lodash'),
 
     // constants
     constants = require('./lib/constants'),
@@ -16,15 +17,56 @@ var Slack = require('slack-client'),
 
     // create slack client and cron job
     slack = new Slack(TOKEN, true, true),
-    cronJob = require('./lib/cron-job')(slack);
+    cronJob = require('./lib/cron-job')(slack),
+    fitbitUserList,
+    totalTeamSteps = 0,
+    maxUserId;
     
 slack.on('open', function() {
     cronJob.start();
+    // get the channel named fitbit
+    // replace this hardcoded value with the channel called fitbit
+    var channel = slack.getChannelGroupOrDMByID('C086PHK0B');
+    fitbitUserList = {};
+    for (var userId in channel._client.users) {
+        fitbitUserList[userId] = 0;
+        maxUserId = userId;
+    }
 });
 
 slack.on('error', function(error) {
     log.error({error: error}, BOT_NAME + ' experienced some error.');
 });
+
+function getUserName(channel, userId) {
+    return channel._client.users[userId].name;
+}
+
+function processFitbitData(channel) {
+    if (channel.name === 'fitbit') {
+        if (fitbitUserList[user.id] !== undefined) {
+            // extract number of steps from message
+            var numSteps = +message.text.replace(/[^\d.ex-]+/gi, '');
+            fitbitUserList[user.id] += numSteps;
+            totalTeamSteps += numSteps;
+            if (fitbitUserList[maxUserId] < fitbitUserList[user.id]) {
+                maxUserId = user.id;
+            }
+        } else {
+            log.error('We have a foreign user messaging in the channel');
+        }
+        // print out total scores and who is winning
+        var fitbitMsg = 'CSR Team\'s Accumulated Steps:\n';
+        for (var userId in fitbitUserList) {
+            fitbitMsg += getUserName(channel, userId) + ': ' + fitbitUserList[userId] + '\n';
+        }
+        fitbitMsg += 'The total number of steps taken by the team is ' +
+        totalTeamSteps + '\n';
+        fitbitMsg += getUserName(channel, maxUserId) + ' currently has the most steps.' +
+        'Let\'s catch up!';
+        channel.send(fitbitMsg);
+    }
+}
 
 slack.on('message', function(message) {
     var channel = slack.getChannelGroupOrDMByID(message.channel),
@@ -32,6 +74,7 @@ slack.on('message', function(message) {
     if (!user) {
         return;
     }
+    processFitbitData(channel);
 
     var msg = message.text,
         IMG_MSG_REGEX = new RegExp('^' + BOT_NAME + '( image| img| animate)( me)? (.*)'),
