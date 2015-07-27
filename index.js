@@ -35,12 +35,12 @@ function getUserName(channel, userId) {
 }
 
 function processFitbitData(channel, user, message) {
-    fitbitUserList = {};
-    for (var userId in channel._client.users) {
-        fitbitUserList[userId] = 0;
-        maxUserId = userId;
-    }
     if (channel.name === 'fitbit') {
+        fitbitUserList = {};
+        for (var userId in channel._client.users) {
+            fitbitUserList[userId] = 0;
+            maxUserId = userId;
+        }
         if (fitbitUserList[user.id] !== undefined) {
             // extract number of steps from message
             var numSteps = +message.text.replace(/[^\d.ex-]+/gi, '');
