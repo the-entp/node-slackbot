@@ -47,10 +47,12 @@ function processFitbitData(channel, user, message) {
         if (fitbitUserList[user.id] !== undefined) {
             // extract number of steps from message
             var numSteps = +message.text.replace(/[^\d.ex-]+/gi, '');
-            fitbitUserList[user.id] += numSteps;
-            totalTeamSteps += numSteps;
-            if (fitbitUserList[maxUserId] < fitbitUserList[user.id]) {
-                maxUserId = user.id;
+            if (!isNaN(numSteps)) {
+                fitbitUserList[user.id] += numSteps;
+                totalTeamSteps += numSteps;
+                if (fitbitUserList[maxUserId] < fitbitUserList[user.id]) {
+                    maxUserId = user.id;
+                }
             }
         } else {
             log.error('We have a foreign user messaging in the channel');
