@@ -43,6 +43,7 @@ function getUserName(channel, userId) {
 }
 
 function processFitbitData(channel, user) {
+    var message = channel.message;
     if (channel.name === 'fitbit') {
         if (fitbitUserList[user.id] !== undefined) {
             // extract number of steps from message
